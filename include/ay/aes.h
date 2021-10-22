@@ -1,8 +1,24 @@
 #ifndef AY_AES_H
 #define AY_AES_H
 
-#include <stdalign.h>
 #include <stddef.h>
+
+#if defined(__STDC_VERSION__) && !defined(AY_AES_ALIGNAS)
+#if __STDC_VERSION__ >= 201112L
+#include <stdalign.h>
+#define AY_AES_ALIGNAS(x) alignas(x)
+#endif
+#endif
+
+#ifndef AY_AES_ALIGNAS
+
+#if defined(_MSC_VER)
+#define AY_AES_ALIGNAS(x) __declspec(align(x))
+#elif defined(__GNUC__)
+#define AY_AES_ALIGNAS(x) __attribute__((aligned(x)))
+#endif
+
+#endif
 
 #define SIZE_OF_AES_ROUND_KEY 16
 #define NUM_ROUND_KEYS_IN_ARRAY 15
@@ -44,10 +60,10 @@ struct AesContext {
   unsigned short key_size;
   unsigned char Nr;
   struct aes_vtable vtable;
-  alignas(16) unsigned char enc_round_keys[NUM_ROUND_KEYS_IN_ARRAY *
-                                           SIZE_OF_AES_ROUND_KEY];
-  alignas(16) unsigned char dec_round_keys[NUM_ROUND_KEYS_IN_ARRAY *
-                                           SIZE_OF_AES_ROUND_KEY];
+  AY_AES_ALIGNAS(16)
+  unsigned char enc_round_keys[NUM_ROUND_KEYS_IN_ARRAY * SIZE_OF_AES_ROUND_KEY];
+  AY_AES_ALIGNAS(16)
+  unsigned char dec_round_keys[NUM_ROUND_KEYS_IN_ARRAY * SIZE_OF_AES_ROUND_KEY];
 };
 
 void aes_init(AesContext *ctx, enum AesKeyType key_type,
