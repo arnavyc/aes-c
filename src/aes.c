@@ -5,7 +5,7 @@
 #include "aes-ni.h"
 #include "inner.h"
 #include <ay/aes.h>
-#include <cpu-capability.h>
+#include <ay/cpu-capability.h>
 
 #define BOOL_TO_STR(b) ((b) ? "true" : "false")
 
@@ -34,8 +34,8 @@ void aes_init(AesContext *ctx, enum AesKeyType key_type,
 }
 
 void aes_ctr_xcrypt(AesContext *ctx, size_t textsize, unsigned char *out,
-                    const unsigned char *in, unsigned char *next_iv,
-                    const unsigned char *iv) {
+                    const unsigned char *in, unsigned char next_iv[16],
+                    const unsigned char iv[16]) {
   ctx->vtable.ctr_xcrypt(ctx, textsize, out, in, next_iv, iv);
 }
 

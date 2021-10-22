@@ -14,17 +14,17 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          #- name: 'Windows Latest - MSVC'
-          #  runner: windows-latest
-          #  build-type: Release
-          #  cc: cl
-          #  cxx: cl
+          - name: 'Windows Latest - MSVC'
+            runner: windows-latest
+            build-type: Release
+            cc: cl
+            cxx: cl
 
-          #- name: 'Windows Latest - Clang'
-          #  runner: windows-latest
-          #  build-type: Release
-          #  cc: clang
-          #  cxx: clang++
+          - name: 'Windows Latest - Clang'
+            runner: windows-latest
+            build-type: Release
+            cc: clang
+            cxx: clang++
 
           - name: 'Ubuntu 20.04 - GCC'
             runner: ubuntu-20.04
@@ -54,18 +54,22 @@ jobs:
         run: |
           echo "C:\msys64\mingw64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
-      - name: "Clone `marehr/intel-sde-downloader`"
-        uses: actions/checkout@v2
-        with:
-          repository: marehr/intel-sde-downloader
-          path: ./intel-sde-downloader
-
-      - name: Download Intel SDE
+      - name: Download Intel SDE (Linux)
+        if: runner.os == 'Linux'
         run: |
-          pip install -r intel-sde-downloader/requirements.txt
-          python ./intel-sde-downloader/intel-sde-downloader.py sde-external-8.69.1-2021-07-18-lin.tar.bz2
-          tar -C intel-sde-downloader -xvf sde-external-8.69.1-2021-07-18-lin.tar.bz2
-          mv intel-sde-downloader/sde-external-8.69.1-2021-07-18-lin intel-sde-downloader/sde
+          curl https://www.intel.com/content/dam/develop/external/us/en/documents/downloads/sde-external-8.69.1-2021-07-18-lin.tar.bz2 --output sde-external-8.69.1-2021-07-18-lin.tar.bz2
+          tar xjvf sde-external-8.69.1-2021-07-18-lin.tar.bz2
+          mv sde-external-8.69.1-2021-07-18-lin sde
+
+      - name: Download Intel SDE (Windows)
+        shell: pwsh
+        if: runner.os == 'Windows'
+        run: |
+          choco upgrade 7zip -y
+          Invoke-WebRequest https://www.intel.com/content/dam/develop/external/us/en/documents/downloads/sde-external-8.69.1-2021-07-18-win.tar.bz2 -OutFile sde-external-8.69.1-2021-07-18-win.tar.bz2
+          7z x sde-external-8.69.1-2021-07-18-win.tar.bz2
+          7z x sde-external-8.69.1-2021-07-18-win.tar -y
+          Move-Item sde-external-8.69.1-2021-07-18-win sde
 
       - name: Setup yama for Intel SDE to run
         if: runner.os == 'Linux'
@@ -76,7 +80,8 @@ jobs:
         run: |
           cmake `
           -D CMAKE_BUILD_TYPE=${{ matrix.config.build-type }} `
-          -D INTEL_SDE_PATH="$(pwd)/intel-sde-downloader/sde/sde$(('', '64')[[Environment]::Is64BitOperatingSystem]);--" `
+          -D INTEL_SDE_PATH="$(pwd)/sde/sde$(('', '64')[[Environment]::Is64BitOperatingSystem -and "${{ runner.os }}" -ne 'Windows']);--" `
+          -D CMAKE_INSTALL_PREFIX="$(pwd)/_install" `
           -G Ninja `
           -B build/
         env:

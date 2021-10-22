@@ -894,3 +894,7 @@ FodyWeavers.xsd
 # Additional files built by Visual Studio
 
 # End of https://www.toptal.com/developers/gitignore/api/archive,archives,c++,c,cmake,vim,emacs,visualstudiocode,visualstudio,sublimetext,python,clion
+
+# Custom
+## For testing if project can be used after installation in tree ##
+_install/

@@ -1,7 +1,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "cpu-capability.h"
+#include <ay/cpu-capability.h>
 
 #if defined(_MSC_VER)
 #include <intrin.h>
@@ -11,7 +11,7 @@
 
 void cpuid_x86(uint32_t regs[4], uint32_t leaf) {
 #if defined(_MSC_VER)
-  __cpuid((uint32_t *)reg, leaf);
+  __cpuid((uint32_t *)regs, leaf);
 #elif defined(__GNUC__)
   __get_cpuid(leaf, &regs[0], &regs[1], &regs[2], &regs[3]);
 #endif

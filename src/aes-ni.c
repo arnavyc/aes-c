@@ -8,6 +8,7 @@
 
 #include "aes-ni.h"
 #include <ay/aes.h>
+#include <ay/aes/hedley.h>
 
 #include "inner.h"
 
@@ -27,25 +28,14 @@
  * @param Nr number of rounds in algorithm (10 for AES-128, 12 for AES-192, 14
  * for AES-256)
  */
-static inline void aes_decryption_key_expansion(__m128i *dec_key_schedule,
-                                                const __m128i *enc_key_schedule,
-                                                __m128i key_lower,
-                                                unsigned char Nr) {
-  dec_key_schedule[Nr] = key_lower;
-  for (size_t i = 1; i < Nr; ++i) {
-    dec_key_schedule[Nr - i] = _mm_aesimc_si128(enc_key_schedule[i]);
-  }
-  dec_key_schedule[0] = enc_key_schedule[Nr];
-}
 
 static inline __m128i aes_encrypt_block(unsigned char Nr, const __m128i *enc_ks,
                                         __m128i plain_block) {
   __m128i block = _mm_xor_si128(plain_block, enc_ks[0]);
-  size_t i = 1;
-  while (i < Nr) {
-    block = _mm_aesenc_si128(block, enc_ks[i++]);
-  }
-  block = _mm_aesenclast_si128(block, enc_ks[i]);
+  for (size_t i = 1; i < Nr; ++i)
+    block = _mm_aesenc_si128(block, enc_ks[i]);
+
+  block = _mm_aesenclast_si128(block, enc_ks[Nr]);
 
   return block;
 };
@@ -53,34 +43,38 @@ static inline __m128i aes_encrypt_block(unsigned char Nr, const __m128i *enc_ks,
 static inline __m128i aes_decrypt_block(unsigned char Nr, const __m128i *dec_ks,
                                         __m128i cipher_block) {
   __m128i block = _mm_xor_si128(cipher_block, dec_ks[0]);
-  size_t i = 1;
-  while (i < Nr) {
-    block = _mm_aesdec_si128(block, dec_ks[i++]);
-  }
-  block = _mm_aesdeclast_si128(block, dec_ks[i]);
+  for (size_t i = 1; i < Nr; ++i)
+    block = _mm_aesdec_si128(block, dec_ks[i]);
+
+  block = _mm_aesdeclast_si128(block, dec_ks[Nr]);
 
   return block;
 }
 
 /** @} */
 
+static __m128i xor_dw_with_prev_dw(__m128i x) {
+  __m128i result = x;
+  for (size_t i = 0; i < 3; ++i)
+    result = _mm_xor_si128(result, _mm_bslli_si128(result, 4));
+
+  return result;
+}
+
 /* AES-128 functions */
 static inline __m128i aes128_keyexp_round_core(__m128i key,
                                                __m128i keygenassist_output) {
+  key = xor_dw_with_prev_dw(key);
+
   keygenassist_output =
       _mm_shuffle_epi32(keygenassist_output, _MM_SHUFFLE(3, 3, 3, 3));
-  key = _mm_xor_si128(key, _mm_slli_si128(key, 4));
-  key = _mm_xor_si128(key, _mm_slli_si128(key, 4));
-  key = _mm_xor_si128(key, _mm_slli_si128(key, 4));
-
   return _mm_xor_si128(key, keygenassist_output);
 }
 
 #define aes128_keyexp_round(key, rcon)                                         \
   aes128_keyexp_round_core((key), _mm_aeskeygenassist_si128((key), (rcon)))
 
-static inline void aes128_expand_key(__m128i enc_key_schedule[11],
-                                     __m128i key) {
+static inline void aes128_expand_key(__m128i enc_ks[11], __m128i key) {
   /*
    * Process of generation of encryption round keys
    *
@@ -106,17 +100,17 @@ static inline void aes128_expand_key(__m128i enc_key_schedule[11],
    * next 128-bit round key.
    */
   /* Generate encryption round keys */
-  enc_key_schedule[0] = key;
-  enc_key_schedule[1] = aes128_keyexp_round(enc_key_schedule[0], 0x01);
-  enc_key_schedule[2] = aes128_keyexp_round(enc_key_schedule[1], 0x02);
-  enc_key_schedule[3] = aes128_keyexp_round(enc_key_schedule[2], 0x04);
-  enc_key_schedule[4] = aes128_keyexp_round(enc_key_schedule[3], 0x08);
-  enc_key_schedule[5] = aes128_keyexp_round(enc_key_schedule[4], 0x10);
-  enc_key_schedule[6] = aes128_keyexp_round(enc_key_schedule[5], 0x20);
-  enc_key_schedule[7] = aes128_keyexp_round(enc_key_schedule[6], 0x40);
-  enc_key_schedule[8] = aes128_keyexp_round(enc_key_schedule[7], 0x80);
-  enc_key_schedule[9] = aes128_keyexp_round(enc_key_schedule[8], 0x1B);
-  enc_key_schedule[10] = aes128_keyexp_round(enc_key_schedule[9], 0x36);
+  enc_ks[0] = key;
+  enc_ks[1] = aes128_keyexp_round(enc_ks[0], 0x01);
+  enc_ks[2] = aes128_keyexp_round(enc_ks[1], 0x02);
+  enc_ks[3] = aes128_keyexp_round(enc_ks[2], 0x04);
+  enc_ks[4] = aes128_keyexp_round(enc_ks[3], 0x08);
+  enc_ks[5] = aes128_keyexp_round(enc_ks[4], 0x10);
+  enc_ks[6] = aes128_keyexp_round(enc_ks[5], 0x20);
+  enc_ks[7] = aes128_keyexp_round(enc_ks[6], 0x40);
+  enc_ks[8] = aes128_keyexp_round(enc_ks[7], 0x80);
+  enc_ks[9] = aes128_keyexp_round(enc_ks[8], 0x1B);
+  enc_ks[10] = aes128_keyexp_round(enc_ks[9], 0x36);
 }
 
 /*
@@ -124,7 +118,8 @@ static inline void aes128_expand_key(__m128i enc_key_schedule[11],
  */
 
 #define shufpd_to_m128i(a, b, imm8)                                            \
-  _mm_castpd_si128(_mm_shuffle_pd((__m128d)(a), (__m128d)(b), (imm8)))
+  _mm_castpd_si128(                                                            \
+      _mm_shuffle_pd(_mm_castsi128_pd(a), _mm_castsi128_pd(b), (imm8)))
 
 static inline void KEY_192_ASSIST(__m128i *temp1, __m128i temp2,
                                   __m128i *temp3) {
@@ -191,28 +186,26 @@ static inline void AES_192_Key_Expansion(const __m128i userkey[2],
  * AES-256 functions
  */
 
-#define aes256_key_expansion_round(round_key0, round_key1, key0, key1, rcon)   \
-  aes256_key_expansion_round_core((round_key0), (round_key1), (key0), (key1),  \
-                                  _mm_aeskeygenassist_si128((key0), (rcon)))
+#define aes256_keyexp_round(round_key1, key0, key1, rcon)                      \
+  aes256_keyexp_round_core((round_key1), (key0), (key1),                       \
+                           _mm_aeskeygenassist_si128((key0), (rcon)))
 
-static inline void
-aes256_key_expansion_round_core(__m128i *round_key0, __m128i *round_key1,
-                                __m128i key0, __m128i key1,
-                                __m128i keygenassist_lower_output) {
+static inline __m128i
+aes256_keyexp_round_core(__m128i *round_key1, __m128i key0, __m128i key1,
+                         __m128i keygenassist_lower_output) {
   __m128i key_lower = key1;
 
   __m128i tmp1 =
       _mm_shuffle_epi32(keygenassist_lower_output, _MM_SHUFFLE(3, 3, 3, 3));
-  for (size_t i = 0; i < 3; ++i) {
-    key_lower = _mm_xor_si128(key_lower, _mm_slli_si128(key_lower, 4));
-  }
+  // for (size_t i = 0; i < 3; ++i) {
+  //   key_lower = _mm_xor_si128(key_lower, _mm_slli_si128(key_lower, 4));
+  // }
+  key_lower = xor_dw_with_prev_dw(key_lower);
   key_lower = _mm_xor_si128(key_lower, tmp1);
 
   if (round_key1 != NULL) {
     __m128i key_upper = key0;
-    for (size_t i = 0; i < 3; ++i) {
-      key_upper = _mm_xor_si128(key_upper, _mm_slli_si128(key_upper, 4));
-    }
+    key_upper = xor_dw_with_prev_dw(key_upper);
 
     __m128i tmp2 = _mm_aeskeygenassist_si128(key_lower, 0);
     tmp2 = _mm_shuffle_epi32(tmp2, _MM_SHUFFLE(2, 2, 2, 2));
@@ -220,27 +213,20 @@ aes256_key_expansion_round_core(__m128i *round_key0, __m128i *round_key1,
 
     *round_key1 = key_upper;
   }
-  *round_key0 = key_lower;
+  // round_key0
+  return key_lower;
 }
 
-static inline void aes256_expand_key(__m128i *enc_key_schedule,
-                                     __m128i key[2]) {
-  enc_key_schedule[0] = key[0];
-  enc_key_schedule[1] = key[1];
-  aes256_key_expansion_round(&enc_key_schedule[2], &enc_key_schedule[3],
-                             enc_key_schedule[1], enc_key_schedule[0], 1);
-  aes256_key_expansion_round(&enc_key_schedule[4], &enc_key_schedule[5],
-                             enc_key_schedule[3], enc_key_schedule[2], 2);
-  aes256_key_expansion_round(&enc_key_schedule[6], &enc_key_schedule[7],
-                             enc_key_schedule[5], enc_key_schedule[4], 4);
-  aes256_key_expansion_round(&enc_key_schedule[8], &enc_key_schedule[9],
-                             enc_key_schedule[7], enc_key_schedule[6], 8);
-  aes256_key_expansion_round(&enc_key_schedule[10], &enc_key_schedule[11],
-                             enc_key_schedule[9], enc_key_schedule[8], 0x10);
-  aes256_key_expansion_round(&enc_key_schedule[12], &enc_key_schedule[13],
-                             enc_key_schedule[11], enc_key_schedule[10], 0x20);
-  aes256_key_expansion_round(&enc_key_schedule[14], NULL, enc_key_schedule[13],
-                             enc_key_schedule[12], 0x40);
+static inline void aes256_expand_key(__m128i *enc_ks, __m128i key[2]) {
+  enc_ks[0] = key[0];
+  enc_ks[1] = key[1];
+  enc_ks[2] = aes256_keyexp_round(&enc_ks[3], enc_ks[1], enc_ks[0], 1);
+  enc_ks[4] = aes256_keyexp_round(&enc_ks[5], enc_ks[3], enc_ks[2], 2);
+  enc_ks[6] = aes256_keyexp_round(&enc_ks[7], enc_ks[5], enc_ks[4], 4);
+  enc_ks[8] = aes256_keyexp_round(&enc_ks[9], enc_ks[7], enc_ks[6], 8);
+  enc_ks[10] = aes256_keyexp_round(&enc_ks[11], enc_ks[9], enc_ks[8], 0x10);
+  enc_ks[12] = aes256_keyexp_round(&enc_ks[13], enc_ks[11], enc_ks[10], 0x20);
+  enc_ks[14] = aes256_keyexp_round(NULL, enc_ks[13], enc_ks[12], 0x40);
 }
 
 static unsigned char key_size_to_nr(unsigned short key_size) {
@@ -253,7 +239,7 @@ static unsigned char key_size_to_nr(unsigned short key_size) {
     return 14;
   }
 
-  return 0;
+  HEDLEY_UNREACHABLE_RETURN(0);
 }
 
 void aesni_init(AesContext *ctx, enum AesKeyType key_size,
@@ -264,13 +250,14 @@ void aesni_init(AesContext *ctx, enum AesKeyType key_size,
   __m128i key_v[2];
 
   switch (key_size) {
-  case 128:
+  case KEY_TYPE_AES128:
     /* Load AES-128 key. */
     key_v[0] = _mm_loadu_si128((const __m128i *)key);
+    key_v[1] = _mm_setzero_si128();
 
     aes128_expand_key((__m128i *)ctx->enc_round_keys, key_v[0]);
     break;
-  case 192:
+  case KEY_TYPE_AES192:
     /* Load AES-192 key. */
     key_v[0] = _mm_loadu_si128((__m128i *)key);
     key_v[1] = _mm_set_epi32(0, 0, 0, 0);
@@ -278,7 +265,7 @@ void aesni_init(AesContext *ctx, enum AesKeyType key_size,
 
     AES_192_Key_Expansion(key_v, (__m128i *)ctx->enc_round_keys);
     break;
-  case 256:
+  case KEY_TYPE_AES256:
     /* Load AES-256 key. */
     key_v[0] = _mm_loadu_si128((const __m128i *)key);
     key_v[1] = _mm_loadu_si128((const __m128i *)key + 1);
@@ -286,12 +273,20 @@ void aesni_init(AesContext *ctx, enum AesKeyType key_size,
     aes256_expand_key((__m128i *)ctx->enc_round_keys, key_v);
     break;
   default:
-    break;
+    HEDLEY_UNREACHABLE();
   }
 
-  aes_decryption_key_expansion((__m128i *)ctx->dec_round_keys,
-                               (__m128i *)ctx->enc_round_keys, key_v[0],
-                               ctx->Nr);
+  /* Expands the given `key_lower` into the decryption key schedule (since Intel
+   * uses Equivalent Inverse Cipher in section 5.3.5 of FIPS 197) */
+  __m128i *dec_key_schedule = (__m128i *)ctx->dec_round_keys;
+  __m128i *enc_key_schedule = (__m128i *)ctx->enc_round_keys;
+  size_t Nr = ctx->Nr;
+
+  dec_key_schedule[Nr] = key_v[0];
+  for (size_t i = 1; i < Nr; ++i)
+    dec_key_schedule[Nr - i] = _mm_aesimc_si128(enc_key_schedule[i]);
+
+  dec_key_schedule[0] = enc_key_schedule[Nr];
 }
 
 void aesni_ecb_decrypt(AesContext *ctx, size_t textsize,

@@ -622,7 +622,12 @@ void aesbs_init(AesContext *ctx, enum AesKeyType key_size,
   aes__key_schedule(round_keys, key, key_size / 32,
                     aesbs_key_size_to_nr(key_size));
 
+#if __STDC_VERSION__ >= 201112L
   static_assert(sizeof ctx->enc_round_keys == sizeof round_keys, "");
+#else
+  assert(sizeof ctx->enc_round_keys == sizeof round_keys);
+#endif
+
   memcpy(ctx->enc_round_keys, round_keys, sizeof ctx->enc_round_keys);
 }
 

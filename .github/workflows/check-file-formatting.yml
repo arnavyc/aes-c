@@ -1,0 +1,38 @@
+# Copyright 2021 arnavyc <arnavyc@outlook.com>
+#
+# SPDX-License-Identifier: 0BSD
+
+name: "Check code & configuration with {clang,cmake}-format"
+
+on: push
+
+jobs:
+  ubuntu:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v2
+
+      - name: Install CMake and Ninja
+        uses: lukka/get-cmake@v3.20.1
+
+      - name: 'Setup Python ^3.8'
+        uses: actions/setup-python@v2
+        with:
+          python-version: '^3.8'
+
+      - name: Install cmake-format
+        run: pip install cmakelang[YAML]
+
+      - name: Install clang-format
+        run: sudo apt-get update && sudo apt-get install -y clang-format
+
+      - name: Configure project
+        run: cmake -G Ninja -B build/
+        env:
+          CC: ${{ matrix.config.cc }}
+          CXX: ${{ matrix.config.cxx }}
+
+      - name: Check formatting of code & configuration
+        run: cmake --build build/ --target check-format
+
