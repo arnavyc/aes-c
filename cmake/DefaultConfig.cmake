@@ -13,7 +13,8 @@ cmake_policy(SET CMP0054 NEW)
 # Add cmake/ directory to $CMAKE_MODULE_PATH
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-# Include GNUInstallDirs module.
+# Include common module.
+include(CMakeDependentOption)
 include(GNUInstallDirs)
 
 # Set UTF-8 as source character set in MSVC
