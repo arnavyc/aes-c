@@ -97,13 +97,13 @@ jobs:
           -D CMAKE_BUILD_TYPE=Debug `
           -D CMAKE_INSTALL_PREFIX="$(pwd)/_install" `
           -G Ninja `
-          -B /tmp/build/install-test
+          -B /tmp/build-install-test
         env:
           CC: ${{ matrix.config.cc }}
           CXX: ${{ matrix.config.cxx }}
 
       - name: "Run program in test project in dir `tests/install-test`"
         run: |
-          cmake --build /tmp/build/install-test
-          /tmp/build/install-test/aes-eg
+          cmake --build /tmp/build-install-test
+          /tmp/build-install-test/aes-eg
 
