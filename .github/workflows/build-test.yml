@@ -90,6 +90,9 @@ jobs:
       - name: Test the project
         run: ctest -V --test-dir build/ --output-on-failure
 
+      - name: Install the project
+        run: cmake --install build/
+
       - name: Test if project can be used by another program after installation
         shell: pwsh
         run: |
