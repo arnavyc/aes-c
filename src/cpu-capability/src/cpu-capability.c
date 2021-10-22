@@ -1,7 +1,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "cpu-capability.h"
+#include <ay/cpu-capability.h>
 
 #if defined(_MSC_VER)
 #include <intrin.h>

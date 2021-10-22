@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: 0BSD
 
-name: Build and test
+name: Test whether project can be used from another project after installation
 
 on: [push]
 
@@ -32,11 +32,11 @@ jobs:
             cc: gcc
             cxx: g++
 
-          - name: 'Ubuntu 20.04 - Clang'
-            runner: ubuntu-20.04
-            build-type: Release
-            cc: clang
-            cxx: clang++
+          #- name: 'Ubuntu 20.04 - Clang'
+          #  runner: ubuntu-20.04
+          #  build-type: Release
+          #  cc: clang
+          #  cxx: clang++
 
     steps:
       - name: Checkout project
@@ -54,29 +54,11 @@ jobs:
         run: |
           echo "C:\msys64\mingw64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
-      - name: "Clone `marehr/intel-sde-downloader`"
-        uses: actions/checkout@v2
-        with:
-          repository: marehr/intel-sde-downloader
-          path: ./intel-sde-downloader
-
-      - name: Download Intel SDE
-        run: |
-          pip install -r intel-sde-downloader/requirements.txt
-          python ./intel-sde-downloader/intel-sde-downloader.py sde-external-8.69.1-2021-07-18-lin.tar.bz2
-          tar -C intel-sde-downloader -xvf sde-external-8.69.1-2021-07-18-lin.tar.bz2
-          mv intel-sde-downloader/sde-external-8.69.1-2021-07-18-lin intel-sde-downloader/sde
-
-      - name: Setup yama for Intel SDE to run
-        if: runner.os == 'Linux'
-        run: "sudo sh -c 'echo 0 > /proc/sys/kernel/yama/ptrace_scope'"
-
       - name: Configure CMake project
         shell: pwsh
         run: |
           cmake `
           -D CMAKE_BUILD_TYPE=${{ matrix.config.build-type }} `
-          -D INTEL_SDE_PATH="$(pwd)/intel-sde-downloader/sde/sde$(('', '64')[[Environment]::Is64BitOperatingSystem]);--" `
           -D CMAKE_INSTALL_PREFIX="$(pwd)/_install" `
           -G Ninja `
           -B build/
@@ -87,6 +69,24 @@ jobs:
       - name: Build the project
         run: cmake --build build/
 
-      - name: Test the project
-        run: ctest -V --test-dir build/ --output-on-failure
+      - name: Install the project
+        run: cmake --install build/
+
+      - name: Test if project can be used by another program after installation
+        shell: pwsh
+        run: |
+          cmake `
+          -D CMAKE_BUILD_TYPE=Debug `
+          -D CMAKE_INSTALL_PREFIX="$(pwd)/_install" `
+          -G Ninja `
+          -S tests/install-test `
+          -B /tmp/build-install-test
+        env:
+          CC: ${{ matrix.config.cc }}
+          CXX: ${{ matrix.config.cxx }}
+
+      - name: "Run program in test project in dir `tests/install-test`"
+        run: |
+          cmake --build /tmp/build-install-test
+          /tmp/build-install-test/aes-eg
 

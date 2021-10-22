@@ -14,5 +14,5 @@ target_link_libraries(aes-bs-tests aes-bs munit internal-hexdump)
 munit_discover_tests(aes-bs-tests)
 
 add_executable(aes-tests aes-tests.c)
-target_link_libraries(aes-tests aes-lib munit internal-hexdump)
+target_link_libraries(aes-tests aes-c munit internal-hexdump)
 munit_discover_tests(aes-tests)

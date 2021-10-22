@@ -5,7 +5,7 @@
 #include "aes-ni.h"
 #include "inner.h"
 #include <ay/aes.h>
-#include <cpu-capability.h>
+#include <ay/cpu-capability.h>
 
 #define BOOL_TO_STR(b) ((b) ? "true" : "false")
 
