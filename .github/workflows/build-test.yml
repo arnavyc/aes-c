@@ -60,7 +60,18 @@ jobs:
           repository: marehr/intel-sde-downloader
           path: ./intel-sde-downloader
 
-      - name: Download Intel SDE
+      - name: Install Intel SDE (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          python -v venv _venv
+          _venv\Scripts\activate
+          pip install -r intel-sde-downloader/requirements.txt
+          python ./intel-sde-downloader/intel-sde-downloader.py sde-external-8.69.1-2021-07-18-win.tar.bz2
+          tar -C intel-sde-downloader -xvf sde-external-8.69.1-2021-07-18-win.tar.bz2
+          mv intel-sde-downloader/sde-external-8.69.1-2021-07-18-win intel-sde-downloader/sde
+
+      - name: Download Intel SDE (Linux)
+        if: runner.os == 'Linux'
         run: |
           pip install -r intel-sde-downloader/requirements.txt
           python ./intel-sde-downloader/intel-sde-downloader.py sde-external-8.69.1-2021-07-18-lin.tar.bz2
