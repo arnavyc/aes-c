@@ -14,17 +14,17 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          #- name: 'Windows Latest - MSVC'
-          #  runner: windows-latest
-          #  build-type: Release
-          #  cc: cl
-          #  cxx: cl
+          - name: 'Windows Latest - MSVC'
+            runner: windows-latest
+            build-type: Release
+            cc: cl
+            cxx: cl
 
-          #- name: 'Windows Latest - Clang'
-          #  runner: windows-latest
-          #  build-type: Release
-          #  cc: clang
-          #  cxx: clang++
+          - name: 'Windows Latest - Clang'
+            runner: windows-latest
+            build-type: Release
+            cc: clang
+            cxx: clang++
 
           - name: 'Ubuntu 20.04 - GCC'
             runner: ubuntu-20.04
