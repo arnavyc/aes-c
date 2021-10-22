@@ -61,7 +61,7 @@ jobs:
           path: ./intel-sde-downloader
 
       - uses: syphar/restore-virtualenv@v1
-        id: cache-venv
+        id: cache-virtualenv
         with:
           requirement_files: intel-sde-downloader/requirements.txt
 
