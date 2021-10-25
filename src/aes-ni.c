@@ -124,11 +124,8 @@ static inline void aes128_expand_key(__m128i enc_key_schedule[11],
  */
 
 #define shufpd_to_m128i(a, b, imm8)                                            \
-  _mm_castpd_si128(_mm_shuffle_pd(                                             \
-    _mm_castsi128_pd(a),                                                       \
-    _mm_castsi128_pd(b),                                                       \
-    (imm8))                                                                    \
-  )
+  _mm_castpd_si128(                                                            \
+      _mm_shuffle_pd(_mm_castsi128_pd(a), _mm_castsi128_pd(b), (imm8)))
 
 static inline void KEY_192_ASSIST(__m128i *temp1, __m128i temp2,
                                   __m128i *temp3) {
