@@ -5,7 +5,9 @@ add_executable(aes-ni-tests tests.c)
 target_link_libraries(aes-ni-tests aes-ni munit internal-hexdump)
 
 if (NOT "${INTEL_SDE_PATH}" STREQUAL "")
-  set_target_properties(aes-ni-tests PROPERTIES CROSSCOMPILING_EMULATOR "${INTEL_SDE_PATH}")
+  set_target_properties(
+    aes-ni-tests PROPERTIES CROSSCOMPILING_EMULATOR "${INTEL_SDE_PATH}"
+  )
 endif ()
 munit_discover_tests(aes-ni-tests)
 

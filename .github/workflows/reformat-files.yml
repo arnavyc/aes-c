@@ -1,0 +1,62 @@
+name: Reformat C/C++ code using Clang-format
+
+# Don't trigger it on pull_request events but issue_comment instead
+on:
+  issue_comment:
+    types:
+      - created
+      - edited
+
+jobs:
+  reformat-code-config:
+    # Trigger the job only when someone comments - Reformat: Code
+    if: "${{ github.event.issue.pull_request && contains(github.event.comment.body, 'Reformat: Code') }}"
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v2
+
+      - name: Install CMake and Ninja
+        uses: lukka/get-cmake@v3.20.1
+
+      - name: 'Setup Python ^3.8'
+        uses: actions/setup-python@v2
+        with:
+          python-version: '^3.8'
+
+      - name: Install cmake-format
+        run: pip install cmakelang[YAML]
+
+      - name: Install clang-format
+        run: sudo apt-get update && sudo apt-get install -y clang-format
+
+      - name: Change branch to that of PR
+        run: gh pr checkout ${{ github.event.issue.number }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Record name of PR branch
+        run: |
+          echo 'CURRENT_BRANCH<<EOF' >> "$GITHUB_ENV"
+          git symbolic-ref --short -q HEAD >> "$GITHUB_ENV"
+          echo EOF >> "$GITHUB_ENV"
+
+      - name: Configure project
+        run: cmake -G Ninja -B build/
+        env:
+          CC: ${{ matrix.config.cc }}
+          CXX: ${{ matrix.config.cxx }}
+
+      - name: Format code & configuration
+        run: cmake --build build/ --target fix-format
+
+      - uses: EndBug/add-and-commit@v7.1.1
+        with:
+          author_name: Clang-Format Bot
+          author_email: robot@example.com
+          message: 'style: format code & config with {clang,cmake}-format'
+          branch: ${{ env.CURRENT_BRANCH }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
