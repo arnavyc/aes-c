@@ -60,12 +60,22 @@ jobs:
           repository: marehr/intel-sde-downloader
           path: ./intel-sde-downloader
 
-      - name: Download Intel SDE
+      - name: Install dependencies of marehr/intel-sde-downloader
+        run: python -m pip install -r intel-sde-downloader/requirements.txt
+
+      - name: Download Intel SDE (Linux)
+        if: runner.os == 'Linux'
         run: |
-          pip install -r intel-sde-downloader/requirements.txt
           python ./intel-sde-downloader/intel-sde-downloader.py sde-external-8.69.1-2021-07-18-lin.tar.bz2
           tar -C intel-sde-downloader -xvf sde-external-8.69.1-2021-07-18-lin.tar.bz2
           mv intel-sde-downloader/sde-external-8.69.1-2021-07-18-lin intel-sde-downloader/sde
+
+      - name: Download Intel SDE (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          python ./intel-sde-downloader/intel-sde-downloader.py sde-external-8.69.1-2021-07-18-win.tar.bz2
+          tar -C intel-sde-downloader -xvf sde-external-8.69.1-2021-07-18-win.tar.bz2
+          mv intel-sde-downloader/sde-external-8.69.1-2021-07-18-win intel-sde-downloader/sde
 
       - name: Setup yama for Intel SDE to run
         if: runner.os == 'Linux'
