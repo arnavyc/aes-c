@@ -48,6 +48,11 @@ jobs:
       - name: Setup MSVC environment if Windows
         uses: ilammy/msvc-dev-cmd@v1
 
+      - name: "Setup Python ^3.8"
+        uses: actions/setup-python@v2
+        with:
+          python-version: "^3.8"
+
       - name: Add clang path to $PATH env
         shell: pwsh
         if: runner.os == 'Windows' && matrix.config.cc == 'clang'
