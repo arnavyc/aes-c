@@ -58,8 +58,8 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           curl https://www.intel.com/content/dam/develop/external/us/en/documents/downloads/sde-external-8.69.1-2021-07-18-lin.tar.bz2 --output sde-external-8.69.1-2021-07-18-lin.tar.bz2
-          tar -C intel-sde-downloader -xjvf sde-external-8.69.1-2021-07-18-lin.tar.bz2
-          mv intel-sde-downloader/sde-external-8.69.1-2021-07-18-lin intel-sde-downloader/sde
+          tar xjvf sde-external-8.69.1-2021-07-18-lin.tar.bz2
+          mv sde-external-8.69.1-2021-07-18-lin sde
 
       - name: Download Intel SDE (Windows)
         shell: pwsh
@@ -68,8 +68,8 @@ jobs:
           choco upgrade 7zip -y
           Invoke-WebRequest https://www.intel.com/content/dam/develop/external/us/en/documents/downloads/sde-external-8.69.1-2021-07-18-win.tar.bz2 -OutFile sde-external-8.69.1-2021-07-18-win.tar.bz2
           7z x sde-external-8.69.1-2021-07-18-win.tar.bz2
-          7z x sde-external-8.69.1-2021-07-18-win.tar -y "-o$(pwd)/intel-sde-downloader"
-          Move-Item intel-sde-downloader/sde-external-8.69.1-2021-07-18-win intel-sde-downloader/sde
+          7z x sde-external-8.69.1-2021-07-18-win.tar -y
+          Move-Item sde-external-8.69.1-2021-07-18-win sde
 
       - name: Setup yama for Intel SDE to run
         if: runner.os == 'Linux'
@@ -80,18 +80,16 @@ jobs:
         run: |
           cmake `
           -D CMAKE_BUILD_TYPE=${{ matrix.config.build-type }} `
-          -D INTEL_SDE_PATH="$(pwd)/intel-sde-downloader/sde/sde$(('', '64')[[Environment]::Is64BitOperatingSystem -and "$env:OPERATING_SYSTEM" -ne 'Windows']);--" `
+          -D INTEL_SDE_PATH="$(pwd)/sde/sde$(('', '64')[[Environment]::Is64BitOperatingSystem -and "${{ runner.os }}" -ne 'Windows']);--" `
           -D CMAKE_INSTALL_PREFIX="$(pwd)/_install" `
           -G Ninja `
           -B build/
         env:
           CC: ${{ matrix.config.cc }}
           CXX: ${{ matrix.config.cxx }}
-          OPERATING_SYSTEM: ${{ runner.os }}
 
       - name: Build the project
         run: cmake --build build/
 
       - name: Test the project
         run: ctest -V --test-dir build/ --output-on-failure
-
