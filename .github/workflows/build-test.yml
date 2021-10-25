@@ -67,9 +67,9 @@ jobs:
 
       - name: Install dependencies of marehr/intel-sde-downloader
         run: |
-          python -m ensurepip --upgrade
-          pip install --upgrade pip wheel setuptools
-          pip install -r intel-sde-downloader/requirements.txt
+          python -m ensurepip --user --upgrade
+          pip install --user --upgrade pip wheel setuptools
+          pip install --user -r intel-sde-downloader/requirements.txt
 
       - name: Download Intel SDE (Linux)
         if: runner.os == 'Linux'
