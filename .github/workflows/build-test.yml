@@ -71,10 +71,11 @@ jobs:
           mv intel-sde-downloader/sde-external-8.69.1-2021-07-18-lin intel-sde-downloader/sde
 
       - name: Download Intel SDE (Windows)
+        shell: pwsh
         if: runner.os == 'Windows'
         run: |
-          curl https://www.intel.com/content/dam/develop/external/us/en/documents/downloads/sde-external-8.69.1-2021-07-18-win.tar.bz2 --output sde-external-8.69.1-2021-07-18-win.tar.bz2
-          tar -C intel-sde-downloader -xjvf sde-external-8.69.1-2021-07-18-win.tar.bz2
+          Invoke-WebRequest https://www.intel.com/content/dam/develop/external/us/en/documents/downloads/sde-external-8.69.1-2021-07-18-win.tar.bz2 -OutFile sde-external-8.69.1-2021-07-18-win.tar.bz2
+          bzcat sde-external-8.69.1-2021-07-18-win.tar.bz2 | tar xvf - -C intel-sde-downloader 
           mv intel-sde-downloader/sde-external-8.69.1-2021-07-18-win intel-sde-downloader/sde
 
       - name: Setup yama for Intel SDE to run
