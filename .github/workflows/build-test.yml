@@ -78,6 +78,7 @@ jobs:
           Invoke-WebRequest https://www.intel.com/content/dam/develop/external/us/en/documents/downloads/sde-external-8.69.1-2021-07-18-win.tar.bz2 -OutFile sde-external-8.69.1-2021-07-18-win.tar.bz2
           7z x sde-external-8.69.1-2021-07-18-win.tar.bz2
           7z x sde-external-8.69.1-2021-07-18-win.tar -y -o.\intel-sde-downloader
+          ls .\intel-sde-downloader
           mv intel-sde-downloader/sde-external-8.69.1-2021-07-18-win intel-sde-downloader/sde
 
       - name: Setup yama for Intel SDE to run
