@@ -29,6 +29,18 @@ cmake_dependent_option(${PROJECT_NAME}_INSTALL
 
 set(INTEL_SDE_PATH "" CACHE STRING "Path to Intel Software Development Emulator")
 
+include(CPM)
+if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+  CPMAddPackage(
+    NAME Format.cmake
+    VERSION 1.7.0
+    GITHUB_REPOSITORY TheLartians/Format.cmake
+    OPTIONS
+      "FORMAT_SKIP_CMAKE YES"
+      "CMAKE_FORMAT_EXCLUDE cmake/CPM.cmake"
+  )
+endif ()
+
 FetchContent_Declare(explicit-memset
   GIT_REPOSITORY https://github.com/arnavyc/explicit-memset
   GIT_TAG origin/main
