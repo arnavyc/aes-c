@@ -14,11 +14,11 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          #- name: 'Windows Latest - MSVC'
-          #  runner: windows-latest
-          #  build-type: Release
-          #  cc: cl
-          #  cxx: cl
+          - name: 'Windows Latest - MSVC'
+            runner: windows-latest
+            build-type: Release
+            cc: cl
+            cxx: cl
 
           #- name: 'Windows Latest - Clang'
           #  runner: windows-latest
