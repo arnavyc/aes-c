@@ -90,7 +90,7 @@ jobs:
         run: |
           cmake `
           -D CMAKE_BUILD_TYPE=${{ matrix.config.build-type }} `
-          -D INTEL_SDE_PATH="$(pwd)/intel-sde-downloader/sde/sde$(('', '64')[[Environment]::Is64BitOperatingSystem -and "$env:OPERATING_SYSTEM" -neq 'Windows']);--" `
+          -D INTEL_SDE_PATH="$(pwd)/intel-sde-downloader/sde/sde$(('', '64')[[Environment]::Is64BitOperatingSystem -and "$env:OPERATING_SYSTEM" -ne 'Windows']);--" `
           -D CMAKE_INSTALL_PREFIX="$(pwd)/_install" `
           -G Ninja `
           -B build/
