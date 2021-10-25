@@ -48,10 +48,10 @@ jobs:
       - name: Setup MSVC environment if Windows
         uses: ilammy/msvc-dev-cmd@v1
 
-      - name: "Setup Python ^3.8"
+      - name: "Setup Python 3.9"
         uses: actions/setup-python@v2
         with:
-          python-version: "^3.8"
+          python-version: "3.9"
 
       - name: Add clang path to $PATH env
         shell: pwsh
@@ -67,9 +67,9 @@ jobs:
 
       - name: Install dependencies of marehr/intel-sde-downloader
         run: |
-          python -m ensurepip --user --upgrade
-          pip install --user --upgrade pip wheel setuptools
-          pip install --user -r intel-sde-downloader/requirements.txt
+          python -m ensurepip --upgrade
+          pip install --upgrade pip wheel setuptools
+          pip install -r intel-sde-downloader/requirements.txt
 
       - name: Download Intel SDE (Linux)
         if: runner.os == 'Linux'
