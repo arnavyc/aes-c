@@ -20,6 +20,22 @@ cmake_dependent_option(
   "BUILD_TESTING;CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME" OFF
 )
 
+# find_program(HAS_SPHINX "sphinx-build")
+cmake_dependent_option(
+  ${PROJECT_NAME}_BUILD_DOCS "Build docs for ${PROJECT_NAME}." ON
+  "CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME" OFF
+)
+
+find_program(POETRY_PROG poetry)
+if (NOT POETRY_PROG)
+  set(POETRY_PROG "")
+endif ()
+
+set(POETRY_PROGRAM
+    ${POETRY_PROG}
+    CACHE FILEPATH "Path to 'poetry' executable"
+)
+
 cmake_dependent_option(
   ${PROJECT_NAME}_INSTALL "Install all targets of ${PROJECT_NAME}." ON
   "CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME" OFF
@@ -136,6 +152,11 @@ if (${PROJECT_NAME}_INSTALL)
           "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake"
     DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
   )
+endif ()
+
+# --- Section: Docs ---
+if (${PROJECT_NAME}_BUILD_DOCS)
+  add_subdirectory(docs)
 endif ()
 
 # --- Section: Testing ---
