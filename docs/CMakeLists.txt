@@ -23,7 +23,6 @@ if (DOXYGEN_FOUND AND SPHINX_FOUND)
   )
 
   add_custom_target(docs)
-  set(SPHINX_MV_BUILD sphinx-multiversion)
 
   foreach (format IN LISTS ${PROJECT_NAME}_SPHINX_FORMATS)
     set(sphinx_versioned_formats "html")
@@ -31,16 +30,12 @@ if (DOXYGEN_FOUND AND SPHINX_FOUND)
     if (format IN_LIST sphinx_versioned_formats)
       add_custom_target(
         docs-${format}
-        # sphinx-build
-        # COMMAND
-        # ${SPHINX_EXECUTOR} ${SPHINX_EXECUTABLE} -b ${format}
-        # -Dbreathe_projects.aes-c=${DOXYGEN_OUTPUT_DIRECTORY}/xml
-        # ${SPHINX_SOURCE} ${SPHINX_BUILD}/${format}
-        # # sphinx-multiversion
+        # Run sphinx-multiversion
         COMMAND
-          ${SPHINX_EXECUTOR} ${SPHINX_MV_BUILD}
+          ${SPHINX_EXECUTOR} sphinx-multiversion
           -Dbreathe_projects.aes-c=${DOXYGEN_OUTPUT_DIRECTORY}/xml
           ${SPHINX_SOURCE} ${SPHINX_BUILD}/${format}
+        # Copy gh-page-redirect.html to index.html
         COMMAND
           ${CMAKE_COMMAND} -E copy_if_different
           ${SPHINX_SOURCE}/gh-page-redirect.html
