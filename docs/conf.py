@@ -28,7 +28,6 @@ author = 'arnavyc'
 
 # The full version, including alpha/beta/rc tags
 verfile = Path(inspect.getsourcefile(lambda:0)).parent.parent.absolute() / "VERSION"
-print(verfile)
 release = get_version_from_file(verfile)["VERSION_STRING_FULL"]
 
 
