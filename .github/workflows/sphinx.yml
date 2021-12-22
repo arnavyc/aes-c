@@ -2,7 +2,7 @@
 
 name: sphinx
 on: 
-  push: []
+  push: {}
   #  branches: [main]
   pull_request: {}
 
@@ -40,7 +40,7 @@ jobs:
           virtualenvs-path: ~/.virtualenvs
 
       - name: Cache Poetry virtualenv
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         id: cache
         with:
           path: ~/.virtualenvs
