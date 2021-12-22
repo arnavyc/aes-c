@@ -10,19 +10,26 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
+import os
+import sys
+sys.path.insert(0, os.path.abspath('.'))
 
 
 # -- Project information -----------------------------------------------------
 
+from GetVersionFromFile import get_version_from_file
+from pathlib import Path
+import inspect
+import os
+
 project = 'aes-c'
-copyright = '2021, arnavyc'
+copyright = '2021 arnavyc'
 author = 'arnavyc'
 
 # The full version, including alpha/beta/rc tags
-release = '0.1.0'
+verfile = Path(inspect.getsourcefile(lambda:0)).parent.parent.absolute() / "VERSION"
+print(verfile)
+release = get_version_from_file(verfile)["VERSION_STRING_FULL"]
 
 
 # -- General configuration ---------------------------------------------------

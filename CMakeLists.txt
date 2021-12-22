@@ -2,13 +2,16 @@ cmake_policy(SET CMP0091 NEW)
 
 cmake_minimum_required(VERSION 3.16...3.20 FATAL_ERROR)
 
-project(
-  aes-c
-  VERSION 0.1.0
-  LANGUAGES C
-)
+project(aes-c LANGUAGES C)
 
 include(cmake/DefaultConfig.cmake)
+
+find_package(Git)
+cmake_dependent_option(
+  VERSION_UPDATE_FROM_GIT "Update version from Git." OFF
+  "GIT_FOUND;CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME" OFF
+)
+include(cmake/GetVersionFromGitTag.cmake)
 
 # --- Section: Options ---
 
@@ -64,13 +67,7 @@ if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
   )
 endif ()
 
-FetchContent_Declare(
-  explicit-memset
-  GIT_REPOSITORY https://github.com/arnavyc/explicit-memset
-  GIT_TAG origin/main
-  GIT_SHALLOW TRUE
-)
-FetchContent_MakeAvailable(explicit-memset)
+CPMAddPackage("gh:arnavyc/explicit-memset#origin/main")
 
 # --- Section: Targets ---
 
