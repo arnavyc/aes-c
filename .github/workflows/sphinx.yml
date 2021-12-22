@@ -48,7 +48,7 @@ jobs:
 
       - name: Set Poetry config
         run: |
-          poetry config virtualenvs.path ~/.virtualenvs
+          poetry config virtualenvs.path $HOME/.virtualenvs
 
       - name: Install Dependencies
         run: |
