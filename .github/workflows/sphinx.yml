@@ -32,10 +32,12 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v2
         with:
-          python-version: "3.9"
+          python-version: "^3.9"
 
       - name: Install Poetry
-        uses: abatilo/actions-poetry@v2.0.0
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-path: ~/.virtualenvs
 
       - name: Cache Poetry virtualenv
         uses: actions/cache@v1
@@ -46,14 +48,8 @@ jobs:
           restore-keys: |
             poetry-${{ hashFiles('**/poetry.lock') }}
 
-      - name: Set Poetry config
-        run: |
-          poetry config virtualenvs.path $HOME/.virtualenvs
-
       - name: Install Dependencies
-        run: |
-          hash -r
-          poetry install
+        run: poetry install
         #if: steps.cache.outputs.cache-hit != 'true'
 
       - name: Debugging information
