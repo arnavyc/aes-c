@@ -57,19 +57,19 @@ jobs:
       - name: Download Intel SDE (Linux)
         if: runner.os == 'Linux'
         run: |
-          curl https://www.intel.com/content/dam/develop/external/us/en/documents/downloads/sde-external-8.69.1-2021-07-18-lin.tar.bz2 --output sde-external-8.69.1-2021-07-18-lin.tar.bz2
-          tar xjvf sde-external-8.69.1-2021-07-18-lin.tar.bz2
-          mv sde-external-8.69.1-2021-07-18-lin sde
+          curl https://downloadmirror.intel.com/732268/sde-external-9.7.0-2022-05-09-lin.tar.xz --output sde-external-9.7.0-2022-05-09-lin.tar.xz
+          tar xJvf sde-external-9.7.0-2022-05-09-lin.tar.xz
+          mv sde-external-9.7.0-2022-05-09-lin sde
 
       - name: Download Intel SDE (Windows)
         shell: pwsh
         if: runner.os == 'Windows'
         run: |
           choco upgrade 7zip -y
-          Invoke-WebRequest https://www.intel.com/content/dam/develop/external/us/en/documents/downloads/sde-external-8.69.1-2021-07-18-win.tar.bz2 -OutFile sde-external-8.69.1-2021-07-18-win.tar.bz2
-          7z x sde-external-8.69.1-2021-07-18-win.tar.bz2
-          7z x sde-external-8.69.1-2021-07-18-win.tar -y
-          Move-Item sde-external-8.69.1-2021-07-18-win sde
+          Invoke-WebRequest https://downloadmirror.intel.com/732268/sde-external-9.7.0-2022-05-09-win.tar.xz -OutFile sde-external-9.7.0-2022-05-09-win.tar.xz
+          7z x sde-external-9.7.0-2022-05-09-win.tar.xz
+          7z x sde-external-9.7.0-2022-05-09-win.tar -y
+          Move-Item sde-external-9.7.0-2022-05-09-win sde
 
       - name: Setup yama for Intel SDE to run
         if: runner.os == 'Linux'
