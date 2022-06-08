@@ -100,11 +100,6 @@ foreach (i aes-c aes-ni aes-bs cpu-capability)
   target_add_compiler_options(${i} PREFIX ${PROJECT_NAME} TARGET_TYPE PRIVATE)
 endforeach ()
 
-include(CMakePrintHelpers)
-cmake_print_properties(
-  TARGETS aes-ni aes-bs aes-c cpu-capability PROPERTIES COMPILE_OPTIONS
-)
-
 # --- Section: Installation ---
 
 if (${PROJECT_NAME}_INSTALL)
