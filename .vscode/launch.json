@@ -1,0 +1,34 @@
+{
+  "configurations": [
+    {
+      "name": "(Windows) Launch aes-tests",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/tests/Debug/aes-tests.exe",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${fileDirname}",
+      "environment": [],
+    },
+    {
+      "name": "(Windows) Launch aes-ni-tests",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/tests/Debug/aes-ni-tests.exe",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${fileDirname}",
+      "environment": [],
+    },
+    {
+      "name": "(Windows) Launch aes-bs-tests",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/tests/Debug/aes-bs-tests.exe",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${fileDirname}",
+      "environment": [],
+    }
+  ]
+}
